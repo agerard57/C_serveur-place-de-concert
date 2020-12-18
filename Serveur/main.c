@@ -1,34 +1,73 @@
 #include "header.h"
 
-char buffer[512];
 int ma_socket;
 
-<<<<<<< HEAD
 void *troakatorz(void *arg) {
-    printf("%i\n", getpid());
+    char buffer[512];
+    char num_dossier[11];
+
     D_argy *param;
     int c = 0;
     int i = -1;
     param = (D_argy *) arg;
-    //read(param->client_socket, buffer, sizeof(buffer));
-    //printf("%s\n", buffer);
-    while(c < NB_DOSSIER){
-        if (param->monensemblededossier[c].disponible){
-            param->monensemblededossier[c].disponible = 0;
-            pthread_mutex_lock(param->monensemblededossier[c].mu_temps);
-            i = c;
-            c = NB_DOSSIER;
+
+    read(param->client_socket, buffer, sizeof(buffer));
+    if (buffer[0] == 'r'){
+        while(c < NB_DOSSIER){
+            if (param->monensemblededossier[c].disponible){
+                param->monensemblededossier[c].disponible = 0;
+                i = c;
+                c = NB_DOSSIER;
+            }
+            c++;
         }
-        c++;
+
+        if (i == -1)
+            write(param->client_socket, "Toutes les réservations sont prises !", 128);
+        else{
+            write(param->client_socket, "Une réservation est possible !", 128);
+            read(param->client_socket, buffer, sizeof(buffer));
+            param->monensemblededossier[i].nom = strdup(buffer);
+            read(param->client_socket, buffer, sizeof(buffer));
+            param->monensemblededossier[i].prenom = strdup(buffer);
+
+            c = 0;
+            while (c < 10){
+                num_dossier[c] = '0' + (rand() % 10);
+                c++;
+            }
+            num_dossier[10] = '\0';
+            param->monensemblededossier[i].num_dossier = strdup(num_dossier);
+            write(param->client_socket, num_dossier, sizeof(num_dossier));
+            printf("Le dossier numéro : %s à été réservé par %s %s\n",
+                   num_dossier, param->monensemblededossier[i].nom, param->monensemblededossier[i].prenom);
+        }
     }
-    printf("%i\t%i\n",i,param->monensemblededossier[c].disponible);
-
-    if (i == -1)
-        write(param->client_socket, "Toutes les réservations sont prises !", 128);
     else{
-        printf("Ligne 40\n");
+        read(param->client_socket, buffer, sizeof(buffer));
 
-        while (1);
+        read(param->client_socket, num_dossier, sizeof(num_dossier));
+        c = 0;
+        i = 0;
+        while(c < NB_DOSSIER){
+            if (!param->monensemblededossier[c].disponible){
+                if (!strcmp(buffer, param->monensemblededossier[c].nom) &&
+                !strcmp(num_dossier, param->monensemblededossier[c].num_dossier)) {
+                    param->monensemblededossier[c].disponible = 1;
+                    param->monensemblededossier[c].nom = NULL;
+                    param->monensemblededossier[c].prenom = NULL;
+                    param->monensemblededossier[c].num_dossier = NULL;
+                    c = NB_DOSSIER;
+                    i = 1;
+                    write(param->client_socket, "Réservation annulée avec succès !", 128);
+                    printf("Le dossier numéro : %s à été annulé\n", num_dossier);
+
+                }
+            }
+        c++;
+        }
+        if (!i)
+            write(param->client_socket, "Votre réservation est introuvable !", 128);
     }
     shutdown(param->client_socket, 2);
     close(param->client_socket);
@@ -36,19 +75,18 @@ void *troakatorz(void *arg) {
 
 
 int main() {
-    printf("%i\n", getpid());
+    char buffer[512];
+
     Dossier *D_D;
     int I_I;
-=======
-//des trucs
 
-int main() {
->>>>>>> 9a32b5571c04a61f99394cf6fff88073caf84ead
     struct sockaddr_in maya_dress;
     struct sockaddr_in client_address;
     int long_addr;
     int client_socket;
     pthread_t tresdheure;
+
+    srand(time(NULL));
 
     bzero(&maya_dress, sizeof(maya_dress));
     maya_dress.sin_port = htons(30000);
@@ -65,16 +103,13 @@ int main() {
     listen(ma_socket, 5);
     long_addr = sizeof(client_address);
 
-<<<<<<< HEAD
     D_D = (Dossier *)malloc(sizeof(Dossier) * NB_DOSSIER);
     I_I = 0;
     while (I_I < NB_DOSSIER){
         D_D[I_I].disponible = 1;
-        D_D[I_I].num_dossier = 0;
+        D_D[I_I].num_dossier = NULL;
         D_D[I_I].nom = NULL;
         D_D[I_I].prenom = NULL;
-        D_D[I_I].mu_temps = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * 1);
-        pthread_mutex_init(D_D[I_I].mu_temps, NULL);
 
         I_I++;
     }
@@ -87,25 +122,10 @@ int main() {
         T_T->client_socket = client_socket;
         T_T->monensemblededossier = D_D;
 
-       //if(fork() == 0){
+        pthread_create(&tresdheure, NULL, troakatorz, T_T);
 
-            pthread_create(&tresdheure, NULL, troakatorz, T_T);
-           // pthread_join(tresdheure, NULL);
-
-        //    exit(0);
-      //  }
     }
 
     close(ma_socket);
 }
-=======
-    if ((client_socket = accept(ma_socket, (struct sockaddr*) &client_address, &long_addr))> 0)
-    {
-        read(client_socket, buffer, sizeof(buffer));
-        printf("%s\n", buffer);
 
-        shutdown(client_socket, 2);
-        close(client_socket);
-    }
-}
->>>>>>> 9a32b5571c04a61f99394cf6fff88073caf84ead

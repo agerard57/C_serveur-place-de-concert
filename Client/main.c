@@ -1,11 +1,12 @@
 #include "header.h"
-<<<<<<< HEAD
-#define SERVER_NAME "172.17.228.75"
-=======
-#define SERVER_NAME "192.168.248.20"
->>>>>>> 9a32b5571c04a61f99394cf6fff88073caf84ead
+#define SERVER_NAME "172.17.228.78"
 
 int to_servers_socket = -1;
+
+void vider_buffer(){
+    int c;
+    while((c = getchar()) != EOF && c != '\n');
+}
 
 int main()
 {
@@ -14,6 +15,8 @@ int main()
     long hostaddr;
     char buffer[512];
     char buffer2[512];
+
+    char c;
 
     bzero(&server_socket_address, sizeof(server_socket_address));
     hostaddr = inet_addr(SERVER_NAME);
@@ -43,16 +46,43 @@ int main()
         exit(0);
     }
 
-<<<<<<< HEAD
+    printf("Voulez-vous faire ou annuler une réservation ? (F/A)\n"); //TODO MENU
+    scanf("%c", &c);
+    if (c == 'F'){
+        write(to_servers_socket, "r\0", 2);
+        read(to_servers_socket, buffer, sizeof(buffer));
+        printf("%s\n",buffer);
 
-    read(to_servers_socket, buffer, sizeof(buffer));
-    printf("Q\n");
+        if (buffer[0] == 'U'){
+            printf("Veuillez saisir votre nom :\n");
+            vider_buffer();
+            scanf("%s", buffer2);
+            write(to_servers_socket, buffer2, sizeof(buffer2));
 
-=======
-    //Contenu be like
-    write(to_servers_socket, "Bonjour\0", sizeof(char) * 8);
->>>>>>> 9a32b5571c04a61f99394cf6fff88073caf84ead
+            printf("Veuillez saisir votre prenom :\n");
+            vider_buffer();
+            scanf("%s", buffer2);
+            write(to_servers_socket, buffer2, sizeof(buffer2));
 
+            read(to_servers_socket, buffer, sizeof(buffer));
+            printf("Votre numéro de dossier est : %s\n",buffer);
+        }
+    }
+    if (c == 'A'){
+        write(to_servers_socket, "a\0", 2);
+
+        printf("Veuillez saisir votre nom :\n");
+        vider_buffer();
+        scanf("%s", buffer2);
+        write(to_servers_socket, buffer2, sizeof(buffer2));
+
+        printf("Veuillez saisir votre numéro de dossier :\n");
+        vider_buffer();
+        scanf("%s", buffer2);
+        write(to_servers_socket, buffer2, sizeof(buffer2));
+        read(to_servers_socket, buffer, sizeof(buffer));
+        printf("%s\n", buffer);
+    }
     //Fermeture de la connexion
     shutdown(to_servers_socket, 2);
     close(to_servers_socket);
