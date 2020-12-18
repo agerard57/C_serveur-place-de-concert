@@ -1,5 +1,9 @@
 #include "header.h"
+<<<<<<< HEAD
+#define SERVER_NAME "172.17.228.75"
+=======
 #define SERVER_NAME "192.168.248.20"
+>>>>>>> 9a32b5571c04a61f99394cf6fff88073caf84ead
 
 int to_servers_socket = -1;
 
@@ -39,8 +43,15 @@ int main()
         exit(0);
     }
 
+<<<<<<< HEAD
+
+    read(to_servers_socket, buffer, sizeof(buffer));
+    printf("Q\n");
+
+=======
     //Contenu be like
     write(to_servers_socket, "Bonjour\0", sizeof(char) * 8);
+>>>>>>> 9a32b5571c04a61f99394cf6fff88073caf84ead
 
     //Fermeture de la connexion
     shutdown(to_servers_socket, 2);
