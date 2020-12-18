@@ -26,8 +26,8 @@ typedef struct dossier Dossier;
 
 struct arg{
     int client_socket;
-    Dossier *monensemblededossier;
+    Dossier *ensemble_dossiers;
 };
-typedef struct arg D_argy;
+typedef struct arg Arg;
 
 #endif
