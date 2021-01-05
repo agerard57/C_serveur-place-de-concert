@@ -74,15 +74,20 @@ void *fonc(void * arg) {
 
 int main() {
     char buffer[512];
-
+    char c;
     Dossier *Dos;
-    int i;
 
+    FILE *fichier;
     struct sockaddr_in my_adr;
     struct sockaddr_in client_address;
     int long_addr;
     int client_socket;
+    int i;
+    int j;
+
     pthread_t td;
+
+    system("echo 'Adresse IP du serveur : ' && hostname -I | cut -d' ' -f1");
 
     srand(time(NULL));
 
@@ -102,7 +107,57 @@ int main() {
     long_addr = sizeof(client_address);
 
     Dos = (Dossier *) malloc(sizeof(Dossier) * NB_DOSSIER);
-    i = 0;
+
+
+    fichier = fopen("save", "r");
+    i=0;
+
+    while ((c = fgetc(fichier)) && c != EOF){
+        printf("Début while %c\n", c);
+        Dos[i].disponible = 0;
+
+        Dos[i].num_dossier = malloc(sizeof(char) * 11);
+        Dos[i].nom = malloc(sizeof(char) * 255);
+        Dos[i].prenom = malloc(sizeof(char) * 255);
+
+        Dos[i].num_dossier[0] = c;
+
+        j=1;
+
+        while (j < 10){
+            c = fgetc(fichier);
+            printf("char id : %c\n", c);
+            Dos[i].num_dossier[j] = c;
+            j++;
+        }
+        Dos[i].num_dossier[j] = '\0';
+        c = fgetc(fichier);
+
+        j = 0;
+
+        while ((c = fgetc(fichier)) && c != '\n'){
+            c = fgetc(fichier);
+            printf("char nom : %c\n", c);
+            Dos[i].nom[j] = c;
+            j++;
+        }
+
+        j = 0;
+
+        while ((c = fgetc(fichier)) && c != '\n'){
+            c = fgetc(fichier);
+            printf("char prenom : %c\n", c);
+            Dos[i].prenom[j] = c;
+            j++;
+        }
+
+        i++;
+        printf("Fin while %c\n", c);
+
+    }
+
+    fclose(fichier);
+
     while (i < NB_DOSSIER) {
         Dos[i].disponible = 1;
         Dos[i].num_dossier = NULL;
@@ -111,6 +166,8 @@ int main() {
 
         i++;
     }
+
+    printf("%s\t%s\n", Dos[0].nom, Dos[1].nom);
 
     while ((client_socket = accept(ma_socket, (struct sockaddr *) &client_address, &long_addr)) > 0) {
         Arg *T;

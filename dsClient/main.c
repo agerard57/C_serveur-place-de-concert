@@ -1,7 +1,5 @@
 #include "header.h"
 
-#define SERVER_NAME "172.17.228.78"
-
 int to_servers_socket = -1;
 
 void vider_buffer() {
@@ -18,13 +16,18 @@ int main() {
 
     char c;
 
+    char server_name[16];
+
+    printf("Saisir l'ip du serveur :\n");
+    scanf("%s",server_name);
+
     bzero(&server_socket_address, sizeof(server_socket_address));
-    hostaddr = inet_addr(SERVER_NAME);
+    hostaddr = inet_addr(server_name);
 
     if (hostaddr != (long) - 1)
         bcopy(&hostaddr, &server_socket_address.sin_addr, sizeof(hostaddr));
     else {
-        server_host_ent = gethostbyname(SERVER_NAME);
+        server_host_ent = gethostbyname(server_name);
         if (server_host_ent == NULL) {
             printf("Problème au niveau de l'hôte\n");
             exit(0);
@@ -46,6 +49,8 @@ int main() {
     }
 
     printf("Voulez-vous faire ou annuler une réservation ? (F/A)\n"); //TODO MENU
+
+    vider_buffer();
     scanf("%c", & c);
     if (c == 'F') {
         write(to_servers_socket, "r\0", 2);
