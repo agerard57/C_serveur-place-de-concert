@@ -2,6 +2,25 @@
 
 int ma_socket;
 
+void sauvegarde(Dossier *dossier){
+    FILE *fichier;
+    int i = 0;
+    fichier = fopen("save.txt", "w"); //Ouvre un fichier en mode "écriture"
+
+    while(i < NB_DOSSIER){
+        if (!dossier[i].disponible){
+            fputs(dossier[i].num_dossier, fichier); //"file put string" sert à insérer du texte dans le fichier
+            fputc('\n',fichier); //"file put char" insère un new line
+            fputs(dossier[i].nom, fichier);
+            fputc('\n',fichier);
+            fputs(dossier[i].prenom, fichier);
+            fputc('\n',fichier);
+        }
+        i++;
+    }
+    fclose(fichier); //ferme le fichier
+}
+
 void *fonc(void * arg) {
     char buffer[512];
     char num_dossier[11];
@@ -12,10 +31,10 @@ void *fonc(void * arg) {
     param = (Arg *) arg;
 
     read(param -> client_socket, buffer, sizeof(buffer));
-    if (buffer[0] == 'r') {
+    if (buffer[0] == 'r') { //Faire une réservation
         while (c < NB_DOSSIER) {
-            if (param -> ensemble_dossiers[c].disponible) {
-                param -> ensemble_dossiers[c].disponible = 0;
+            if (param -> ensemble_dossiers[c].disponible) {   //Si le dossier est disponible...
+                param -> ensemble_dossiers[c].disponible = 0; //...on le réserve
                 i = c;
                 c = NB_DOSSIER;
             }
@@ -26,32 +45,34 @@ void *fonc(void * arg) {
             write(param -> client_socket, "Toutes les réservations sont prises !", 128);
         else {
             write(param -> client_socket, "Une réservation est possible !", 128);
-            read(param -> client_socket, buffer, sizeof(buffer));
-            param -> ensemble_dossiers[i].nom = strdup(buffer);
-            read(param -> client_socket, buffer, sizeof(buffer));
-            param -> ensemble_dossiers[i].prenom = strdup(buffer);
+            read(param -> client_socket, buffer, sizeof(buffer)); //Récupération du nom du client
+            param -> ensemble_dossiers[i].nom = strdup(buffer); //Affectation du nom du client au dossier
+            read(param -> client_socket, buffer, sizeof(buffer)); //Récupération du prénom du client
+            param -> ensemble_dossiers[i].prenom = strdup(buffer); //Affectation du prénom du client au dossier
 
             c = 0;
-            while (c < 10) {
+            while (c < 10) { //Génération aléatoire d'un numéro de dossier
                 num_dossier[c] = '0' + (rand() % 10);
                 c++;
             }
             num_dossier[10] = '\0';
-            param -> ensemble_dossiers[i].num_dossier = strdup(num_dossier);
-            write(param -> client_socket, num_dossier, sizeof(num_dossier));
-            printf("Le dossier numéro : %s à été réservé par %s %s\n",
+            param -> ensemble_dossiers[i].num_dossier = strdup(num_dossier); //Affectation du numéro de dossier
+            write(param -> client_socket, num_dossier, sizeof(num_dossier)); //Envoi du numéro de dossier
+            printf("Le dossier numéro : %s a été réservé par %s %s\n",
                    num_dossier, param -> ensemble_dossiers[i].nom, param -> ensemble_dossiers[i].prenom);
-        }
-    } else {
-        read(param -> client_socket, buffer, sizeof(buffer));
 
-        read(param -> client_socket, num_dossier, sizeof(num_dossier));
+            sauvegarde(param -> ensemble_dossiers);
+        }
+    } else { //Annulation d'une réservation
+        read(param -> client_socket, buffer, sizeof(buffer)); //Récupération du nom du client
+
+        read(param -> client_socket, num_dossier, sizeof(num_dossier)); //Récupération du numéro de dossier
         c = 0;
         i = 0;
-        while (c < NB_DOSSIER) {
+        while (c < NB_DOSSIER) { //Parcours des dossiers
             if (!param -> ensemble_dossiers[c].disponible) {
                 if (!strcmp(buffer, param -> ensemble_dossiers[c].nom) &&
-                    !strcmp(num_dossier, param -> ensemble_dossiers[c].num_dossier)) {
+                    !strcmp(num_dossier, param -> ensemble_dossiers[c].num_dossier)) { //On vérifie qu'il s'agit du bon dossier afin de le supprimer
                     param -> ensemble_dossiers[c].disponible = 1;
                     param -> ensemble_dossiers[c].nom = NULL;
                     param -> ensemble_dossiers[c].prenom = NULL;
@@ -59,13 +80,13 @@ void *fonc(void * arg) {
                     c = NB_DOSSIER;
                     i = 1;
                     write(param -> client_socket, "Réservation annulée avec succès !", 128);
-                    printf("Le dossier numéro : %s à été annulé\n", num_dossier);
-
+                    printf("Le dossier numéro : %s a été annulé\n", num_dossier);
+                    sauvegarde(param -> ensemble_dossiers);
                 }
             }
             c++;
         }
-        if (!i)
+        if (!i) //Si pas de réservation faite auparavant
             write(param -> client_socket, "Votre réservation est introuvable !", 128);
     }
     shutdown(param -> client_socket, 2);
@@ -87,7 +108,7 @@ int main() {
 
     pthread_t td;
 
-    system("echo 'Adresse IP du serveur : ' && hostname -I | cut -d' ' -f1");
+    system("echo 'Adresse IP du serveur : ' && hostname -I | cut -d' ' -f1"); //Affiche l'adresse IP du serveur
 
     srand(time(NULL));
 
@@ -109,56 +130,47 @@ int main() {
     Dos = (Dossier *) malloc(sizeof(Dossier) * NB_DOSSIER);
 
 
-    fichier = fopen("save", "r");
+    fichier = fopen("save.txt", "r");
     i=0;
 
-    while ((c = fgetc(fichier)) && c != EOF){
-        printf("Début while %c\n", c);
-        Dos[i].disponible = 0;
+    while (c != EOF && (c = fgetc(fichier)) != EOF){ //On parcourt le fichier de sauvegarde
+        if (i == 0 ){
+            printf("Précédentes réservations efféctuées: \n");
+        }
 
+        Dos[i].disponible = 0;
         Dos[i].num_dossier = malloc(sizeof(char) * 11);
         Dos[i].nom = malloc(sizeof(char) * 255);
         Dos[i].prenom = malloc(sizeof(char) * 255);
 
         Dos[i].num_dossier[0] = c;
-
-        j=1;
-
-        while (j < 10){
-            c = fgetc(fichier);
-            printf("char id : %c\n", c);
+        j = 1;
+        while ((c = fgetc(fichier)) != '\n'){ //On récupère le numéro de dossier
             Dos[i].num_dossier[j] = c;
             j++;
         }
         Dos[i].num_dossier[j] = '\0';
-        c = fgetc(fichier);
+
 
         j = 0;
-
-        while ((c = fgetc(fichier)) && c != '\n'){
-            c = fgetc(fichier);
-            printf("char nom : %c\n", c);
+        while ((c = fgetc(fichier)) != '\n'){ //On récupère le nom de la personne
             Dos[i].nom[j] = c;
             j++;
         }
 
-        j = 0;
 
-        while ((c = fgetc(fichier)) && c != '\n'){
-            c = fgetc(fichier);
-            printf("char prenom : %c\n", c);
+        j = 0;
+        while ((c = fgetc(fichier)) && c != '\n'){ //On récupère le nom de la personne
             Dos[i].prenom[j] = c;
             j++;
         }
-
+        printf("%s\t-\t%s\t-\t%s\n", Dos[i].num_dossier,Dos[i].nom,Dos[i].prenom); //Affichage des clients déjà inscrits
         i++;
-        printf("Fin while %c\n", c);
-
     }
 
     fclose(fichier);
 
-    while (i < NB_DOSSIER) {
+    while (i < NB_DOSSIER) { //On initialise les fichiers restants
         Dos[i].disponible = 1;
         Dos[i].num_dossier = NULL;
         Dos[i].nom = NULL;
@@ -167,9 +179,9 @@ int main() {
         i++;
     }
 
-    printf("%s\t%s\n", Dos[0].nom, Dos[1].nom);
+	printf("En attente de connexion(s) ...\n");
 
-    while ((client_socket = accept(ma_socket, (struct sockaddr *) &client_address, &long_addr)) > 0) {
+    while ((client_socket = accept(ma_socket, (struct sockaddr *) &client_address, &long_addr)) > 0) { //On attend une ou des connexion(s)
         Arg *T;
 
         T = (Arg *) malloc(sizeof(Arg) * 1);

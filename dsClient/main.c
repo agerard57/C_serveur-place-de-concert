@@ -18,8 +18,8 @@ int main() {
 
     char server_name[16];
 
-    printf("Saisir l'ip du serveur :\n");
-    scanf("%s",server_name);
+    printf("Saisir l'IP du serveur :\n");
+    scanf("%s",server_name); //On récupère l'IP du serveur
 
     bzero(&server_socket_address, sizeof(server_socket_address));
     hostaddr = inet_addr(server_name);
@@ -37,57 +37,58 @@ int main() {
 
     server_socket_address.sin_port = htons(30000);
     server_socket_address.sin_family = AF_INET;
-    //Création de la socket
-    if ((to_servers_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+
+    if ((to_servers_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) { //Création de la socket
         printf("Création socket client ratée !\n");
         exit(0);
     }
-    //Demande de connexion
-    if (connect(to_servers_socket, (struct sockaddr *) & server_socket_address, sizeof(server_socket_address)) < 0) {
+
+    if (connect(to_servers_socket, (struct sockaddr *) & server_socket_address,
+            sizeof(server_socket_address)) < 0) {  //Demande de connexion
         printf("Demande de connexion ratée\n");
         exit(0);
     }
 
-    printf("Voulez-vous faire ou annuler une réservation ? (F/A)\n"); //TODO MENU
+    printf("Voulez-vous Réserver ou Annuler ? (R/A)\n"); //TODO MENU
 
     vider_buffer();
     scanf("%c", & c);
-    if (c == 'F') {
-        write(to_servers_socket, "r\0", 2);
-        read(to_servers_socket, buffer, sizeof(buffer));
+    if (c == 'R') { //Faire une réservation
+        write(to_servers_socket, "r\0", 2); //On dit au serveur que l'on s'apprête a réserver
+        read(to_servers_socket, buffer, sizeof(buffer)); //Le serveur vérifie si une place est disponible
         printf("%s\n", buffer);
 
-        if (buffer[0] == 'U') {
+        if (buffer[0] == 'U') { //Une place est disponible
             printf("Veuillez saisir votre nom :\n");
             vider_buffer();
             scanf("%s", buffer2);
-            write(to_servers_socket, buffer2, sizeof(buffer2));
+            write(to_servers_socket, buffer2, sizeof(buffer2)); //On envoie le nom au serveur
 
             printf("Veuillez saisir votre prenom :\n");
             vider_buffer();
             scanf("%s", buffer2);
-            write(to_servers_socket, buffer2, sizeof(buffer2));
+            write(to_servers_socket, buffer2, sizeof(buffer2)); //On envoie le prenom au serveur
 
-            read(to_servers_socket, buffer, sizeof(buffer));
+            read(to_servers_socket, buffer, sizeof(buffer)); // On récupère le numéro de dossier
             printf("Votre numéro de dossier est : %s\n", buffer);
         }
     }
-    if (c == 'A') {
-        write(to_servers_socket, "a\0", 2);
+    if (c == 'A') { //Annuler un dossier
+        write(to_servers_socket, "a\0", 2); //On dit au serveur que l'on annule
 
         printf("Veuillez saisir votre nom :\n");
         vider_buffer();
         scanf("%s", buffer2);
-        write(to_servers_socket, buffer2, sizeof(buffer2));
+        write(to_servers_socket, buffer2, sizeof(buffer2)); //On envoie le nom au serveur
 
         printf("Veuillez saisir votre numéro de dossier :\n");
         vider_buffer();
         scanf("%s", buffer2);
-        write(to_servers_socket, buffer2, sizeof(buffer2));
-        read(to_servers_socket, buffer, sizeof(buffer));
+        write(to_servers_socket, buffer2, sizeof(buffer2)); //On envoie le numéro au serveur
+        read(to_servers_socket, buffer, sizeof(buffer)); // Le serveur confirme ou non la demande
         printf("%s\n", buffer);
     }
-    //Fermeture de la connexion
-    shutdown(to_servers_socket, 2);
+
+    shutdown(to_servers_socket, 2); //Fermeture de la connexion
     close(to_servers_socket);
 }

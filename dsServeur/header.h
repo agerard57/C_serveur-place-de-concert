@@ -14,7 +14,7 @@
 # include <time.h>
 # include <pthread.h>
 
-# define NB_DOSSIER 100
+# define NB_DOSSIER 100 //Nombre de réservations max.
 
 struct dossier{
     int disponible;
