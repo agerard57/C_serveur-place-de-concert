@@ -97,7 +97,7 @@ void *fonc(void * arg) {
     }
     shutdown(param -> client_socket, 2);
     close(param -> client_socket);
-};
+}
 
 int main() {
     clearScreen();
