@@ -25,6 +25,8 @@
 
 #include <sys/socket.h>
 
+#include <unistd.h>
+
 #include <signal.h>
 
 #endif

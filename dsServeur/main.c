@@ -2,6 +2,12 @@
 
 int ma_socket;
 
+void clearScreen()
+{
+    system("cls");      //Vide l'écran
+    system("clear");    //Vide l'écran
+}
+
 void sauvegarde(Dossier *dossier){
     FILE *fichier;
     int i = 0;
@@ -58,7 +64,7 @@ void *fonc(void * arg) {
             num_dossier[10] = '\0';
             param -> ensemble_dossiers[i].num_dossier = strdup(num_dossier); //Affectation du numéro de dossier
             write(param -> client_socket, num_dossier, sizeof(num_dossier)); //Envoi du numéro de dossier
-            printf("Le dossier numéro : %s a été réservé par %s %s\n",
+            printf("- Le dossier numéro : %s a été réservé par %s %s\n",
                    num_dossier, param -> ensemble_dossiers[i].nom, param -> ensemble_dossiers[i].prenom);
 
             sauvegarde(param -> ensemble_dossiers);
@@ -80,7 +86,7 @@ void *fonc(void * arg) {
                     c = NB_DOSSIER;
                     i = 1;
                     write(param -> client_socket, "Réservation annulée avec succès !", 128);
-                    printf("Le dossier numéro : %s a été annulé\n", num_dossier);
+                    printf("- Le dossier numéro : %s a été annulé\n", num_dossier);
                     sauvegarde(param -> ensemble_dossiers);
                 }
             }
@@ -94,6 +100,8 @@ void *fonc(void * arg) {
 };
 
 int main() {
+    clearScreen();
+
     char buffer[512];
     char c;
     Dossier *Dos;
@@ -103,12 +111,12 @@ int main() {
     struct sockaddr_in client_address;
     int long_addr;
     int client_socket;
-    int i;
-    int j;
+    int i, j;
 
     pthread_t td;
 
     system("echo 'Adresse IP du serveur : ' && hostname -I | cut -d' ' -f1"); //Affiche l'adresse IP du serveur
+    printf("_______________________\n\n");
 
     srand(time(NULL));
 
@@ -135,7 +143,13 @@ int main() {
 
     while (c != EOF && (c = fgetc(fichier)) != EOF){ //On parcourt le fichier de sauvegarde
         if (i == 0 ){
-            printf("Précédentes réservations efféctuées: \n");
+            printf("****************************************************\n");
+            printf("*                                                  *\n");
+            printf("*    ------------------------------------------    *\n");
+            printf("*   |   Précédentes réservations effectuées:   |   *\n");
+            printf("*    ------------------------------------------    *\n");
+            printf("*                                                  *\n");
+            printf("****************************************************\n");
         }
 
         Dos[i].disponible = 0;
@@ -160,11 +174,12 @@ int main() {
 
 
         j = 0;
-        while ((c = fgetc(fichier)) && c != '\n'){ //On récupère le nom de la personne
+        while ((c = fgetc(fichier)) && c != '\n'){ //On récupère le prenom de la personne
             Dos[i].prenom[j] = c;
             j++;
         }
-        printf("%s\t-\t%s\t-\t%s\n", Dos[i].num_dossier,Dos[i].nom,Dos[i].prenom); //Affichage des clients déjà inscrits
+        printf("\nDossier :\n\n");
+        printf("%s\t-\t%s\t-\t%s\n\n", Dos[i].num_dossier,Dos[i].nom,Dos[i].prenom); //Affichage des clients déjà inscrits
         i++;
     }
 
@@ -178,8 +193,8 @@ int main() {
 
         i++;
     }
-
-	printf("En attente de connexion(s) ...\n");
+    printf("_______________________\n\n");
+    printf("Actions ...\n\n"); // A partir d'ici, les actions des clients seront affichés en dessous de ce texte
 
     while ((client_socket = accept(ma_socket, (struct sockaddr *) &client_address, &long_addr)) > 0) { //On attend une ou des connexion(s)
         Arg *T;
