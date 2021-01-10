@@ -12,11 +12,11 @@
 	* [Quiter l'application](#quit)
 - [ Les spécificités de l'application ?](#specs)
 	* [Limite de dossier maximum](#limite)
-	* [Création automatique et aléatoire des numéro de dossier](#dossier)
+	* [Création automatique et aléatoire des numéros de dossier](#dossier)
 	* [Fichier de sauvgarde](#save)
 
 ## Présentation<a name="#pres"></a>
-Il s'agit d'une application de réservation de places de concert fait entièrement en C.
+Il s'agit d'une application de réservation de places de concert faite entièrement en C.
 Le projet repose sur un système de communication entre un serveur et un ou des clients
 
 ___
@@ -47,8 +47,8 @@ root@monPC:~$ gcc -o client main.c
 root@monPC:~$ gcc ./client
 ```
 ## Comment utiliser l'application ?<a name="utiliser"></a>
-Une fois les deux pages (serveur et client) lancés en même temps sur deux terminaux différents, il faut établir la communication entre les deux.
-Pour cela, il faudra renseigner au client l'adresse du serveur, qui est affiché sur la page :
+Une fois les deux pages (serveur et client) lancées en même temps sur deux terminaux différents, il faut établir la communication entre les deux.
+Pour cela, il faudra renseigner au client l'adresse du serveur, qui est affichée sur la page :
 |Fenêtre SERVEUR  | Fenêtre CLIENT |
 |--|--|
 |![image](https://user-images.githubusercontent.com/56207146/104113428-f70b9d80-52f9-11eb-9887-48582843f82d.png)  |  ![image](https://user-images.githubusercontent.com/56207146/104113445-1b677a00-52fa-11eb-8da4-75a0712130eb.png)|
@@ -86,7 +86,7 @@ Le serveur vous confirmera aussi la suppression du dossier :
 
 ![image](https://user-images.githubusercontent.com/56207146/104113794-7189ec80-52fd-11eb-8d15-d1f0f79f5f71.png)
 
-> :exclamation: **Attention** : Si une des informations entrées sont erronés ou n'existent pas, un message préviendra de l'échec de l'opération
+> :exclamation: **Attention** : Si une des informations entrées sont erronées ou n'existent pas, un message préviendra de l'échec de l'opération
 ![image](https://user-images.githubusercontent.com/56207146/104113797-7353b000-52fd-11eb-9a1d-b3501e40efc0.png)
 
 > 
@@ -125,7 +125,7 @@ ___
  ### Création automatique et aléatoire des numéro de dossier<a name="dossier"></a>
 
  
- Dans un souci d'efficacité, nous avons décidés de générer aléatoirement les numéros de dossier à la réservation. 
+ Dans un souci d'efficacité, nous avons décidé de générer aléatoirement les numéros de dossier à la réservation. 
  
 ```c
 c = 0;
